@@ -3,7 +3,8 @@ param(
     [string]$Distro = "Ubuntu",
     [switch]$InstallOptionalPackages,
     [switch]$SkipWsl,
-    [switch]$ForceInstall
+    [switch]$ForceInstall,
+    [switch]$NoSelfElevate
 )
 
 $ErrorActionPreference = "Stop"
@@ -17,6 +18,41 @@ function Write-Section {
     param([string]$Message)
     Write-Host ""
     Write-Host "== $Message ==" -ForegroundColor Cyan
+}
+
+function Test-Administrator {
+    $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Get-ScriptArgumentList {
+    $arguments = @(
+        "-NoProfile"
+        "-ExecutionPolicy"
+        "Bypass"
+        "-File"
+        "`"$PSCommandPath`""
+    )
+
+    if ($Distro -ne "Ubuntu") {
+        $arguments += @("-Distro", "`"$Distro`"")
+    }
+
+    if ($InstallOptionalPackages) {
+        $arguments += "-InstallOptionalPackages"
+    }
+
+    if ($SkipWsl) {
+        $arguments += "-SkipWsl"
+    }
+
+    if ($ForceInstall) {
+        $arguments += "-ForceInstall"
+    }
+
+    $arguments += "-NoSelfElevate"
+    return $arguments
 }
 
 function Test-Command {
@@ -35,7 +71,7 @@ function Get-PackageIds {
 function Test-WingetPackageInstalled {
     param([string]$PackageId)
 
-    & winget list --id $PackageId --exact --accept-source-agreements 2>$null | Out-Null
+    & winget list --id $PackageId --exact --accept-source-agreements --disable-interactivity 2>$null | Out-Null
     return $LASTEXITCODE -eq 0
 }
 
@@ -52,7 +88,7 @@ function Install-WingetPackageList {
         }
 
         Write-Host "Installing $packageId"
-        & winget install --id $packageId --exact --accept-package-agreements --accept-source-agreements --silent
+        & winget install --id $packageId --exact --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "winget reported a non-zero exit code for $packageId"
         }
@@ -72,6 +108,13 @@ function Get-WslDistros {
 
 if (-not (Test-Command "winget")) {
     throw "winget is not available. Install App Installer from Microsoft and try again."
+}
+
+if (-not $NoSelfElevate -and -not (Test-Administrator)) {
+    Write-Section "Requesting elevation"
+    Write-Host "Relaunching bootstrap in an elevated PowerShell so installs and WSL setup can run unattended."
+    Start-Process powershell -Verb RunAs -ArgumentList (Get-ScriptArgumentList)
+    exit
 }
 
 Write-Section "Installing base Windows packages"

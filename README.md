@@ -21,13 +21,22 @@ This repo is for people who are productive on macOS or Linux, but are stuck usin
 
 ## Quick start
 
-Open an elevated PowerShell session in this repo and run:
+Open PowerShell in this repo and run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
+.\scripts\setup.ps1 -InstallOptionalPackages
+```
+
+`setup.ps1` is the one-prompt path. It requests elevation once, then runs the audit, package bootstrap, Windows settings, and plugged-in sleep policy update as a single flow.
+
+If you prefer to run pieces individually, you still can:
+
+```powershell
 .\scripts\check.ps1
 .\scripts\bootstrap.ps1 -InstallOptionalPackages
 .\scripts\apply.ps1
+.\scripts\set-sleep-policy.ps1 -DisableSleepOnAc -DisableHibernateOnAc
 ```
 
 `bootstrap.ps1` skips packages that are already installed. If you explicitly want to retry installs for detected packages, use:
@@ -44,11 +53,10 @@ Then, inside your WSL distro:
 
 ## Suggested workflow
 
-1. Run [`check.ps1`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/scripts/check.ps1) to see the current machine state.
-2. Run [`bootstrap.ps1`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/scripts/bootstrap.ps1) to install packages and WSL prerequisites.
-3. Run [`apply.ps1`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/scripts/apply.ps1) to apply the lowest-risk Windows settings.
-4. Open your distro and run [`bootstrap.sh`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/wsl/bootstrap.sh).
-5. Customize the package lists and shell snippets for your own taste.
+1. Run [`setup.ps1`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/scripts/setup.ps1) for the easiest path.
+2. Reboot if Windows features or WSL requested it.
+3. Open your distro and run [`bootstrap.sh`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/wsl/bootstrap.sh).
+4. Customize the package lists and shell snippets for your own taste.
 
 ## Long-running tasks
 
@@ -68,6 +76,15 @@ If you want the machine to keep working while `codex`, `claude`, or another long
 ```
 
 The wrapper keeps the system awake without permanently changing your power plan. The power policy script changes the current power scheme.
+
+## Automation limits
+
+You can make this mostly unattended, but not infinitely unattended.
+
+- This repo now tries to collapse Windows elevation into a single up-front UAC prompt.
+- `winget` installs use non-interactive flags where possible.
+- Some third-party installers can still behave badly or require a reboot.
+- Truly zero-prompt setup usually means disabling UAC or using enterprise management tooling. That is outside the scope of this repo and usually not worth it for a personal workstation.
 
 ## Repo layout
 

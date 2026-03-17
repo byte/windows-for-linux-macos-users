@@ -1,5 +1,7 @@
 [CmdletBinding()]
-param()
+param(
+    [switch]$NoSelfElevate
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -13,6 +15,17 @@ function Test-Administrator {
     $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $principal = New-Object Security.Principal.WindowsPrincipal($currentIdentity)
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Get-ScriptArgumentList {
+    return @(
+        "-NoProfile"
+        "-ExecutionPolicy"
+        "Bypass"
+        "-File"
+        "`"$PSCommandPath`""
+        "-NoSelfElevate"
+    )
 }
 
 function Set-RegistryDword {
@@ -37,6 +50,13 @@ function Set-RegistryDword {
 }
 
 $isAdmin = Test-Administrator
+
+if (-not $NoSelfElevate -and -not $isAdmin) {
+    Write-Section "Requesting elevation"
+    Write-Host "Relaunching apply in an elevated PowerShell so machine-wide settings can be updated in one pass."
+    Start-Process powershell -Verb RunAs -ArgumentList (Get-ScriptArgumentList)
+    exit
+}
 
 Write-Section "Applying current-user Explorer settings"
 Set-RegistryDword -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0
@@ -64,4 +84,3 @@ else {
 
 Write-Section "Apply complete"
 Write-Host "Explorer may need to be restarted or you may need to sign out and back in for some settings to appear."
-
