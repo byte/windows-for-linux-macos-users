@@ -15,6 +15,7 @@ This repo is for people who are productive on macOS or Linux, but are stuck usin
 
 - Installs a solid baseline of Windows developer tools with `winget`
 - Applies a few high-value Windows settings that reduce friction
+- Adds an explicit "stay awake during long-running work" path for agentic CLI tools
 - Bootstraps a WSL distro with familiar Unix command-line tools
 - Documents the Windows-specific footguns that still matter
 
@@ -42,6 +43,25 @@ Then, inside your WSL distro:
 3. Run [`apply.ps1`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/scripts/apply.ps1) to apply the lowest-risk Windows settings.
 4. Open your distro and run [`bootstrap.sh`](/C:/Users/cchar/source/repos/byte/windows-for-linux-macos-users/wsl/bootstrap.sh).
 5. Customize the package lists and shell snippets for your own taste.
+
+## Long-running tasks
+
+If you want the machine to keep working while `codex`, `claude`, or another long-running CLI task is active, you have two options:
+
+- Prevent the machine from sleeping while plugged in:
+
+```powershell
+.\scripts\set-sleep-policy.ps1 -DisableSleepOnAc
+```
+
+- Wrap a single command so Windows stays awake only while that command is running:
+
+```powershell
+.\scripts\invoke-awake.ps1 codex
+.\scripts\invoke-awake.ps1 claude
+```
+
+The wrapper keeps the system awake without permanently changing your power plan. The power policy script changes the current power scheme.
 
 ## Repo layout
 
@@ -83,4 +103,3 @@ Base WSL packages live in [`wsl/packages.txt`](/C:/Users/cchar/source/repos/byte
 - Add distro-specific WSL bootstraps for Ubuntu and Debian
 - Add optional profiles for `pwsh`, Ubuntu, and a "Windows admin" shell in Terminal
 - Add CI checks for PowerShell syntax and shell script linting
-
