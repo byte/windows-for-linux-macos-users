@@ -30,6 +30,12 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\scripts\apply.ps1
 ```
 
+`bootstrap.ps1` skips packages that are already installed. If you explicitly want to retry installs for detected packages, use:
+
+```powershell
+.\scripts\bootstrap.ps1 -InstallOptionalPackages -ForceInstall
+```
+
 Then, inside your WSL distro:
 
 ```bash

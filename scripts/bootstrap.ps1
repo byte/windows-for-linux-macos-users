@@ -2,7 +2,8 @@
 param(
     [string]$Distro = "Ubuntu",
     [switch]$InstallOptionalPackages,
-    [switch]$SkipWsl
+    [switch]$SkipWsl,
+    [switch]$ForceInstall
 )
 
 $ErrorActionPreference = "Stop"
@@ -31,10 +32,25 @@ function Get-PackageIds {
         Where-Object { $_ -and -not $_.StartsWith("#") }
 }
 
+function Test-WingetPackageInstalled {
+    param([string]$PackageId)
+
+    & winget list --id $PackageId --exact --accept-source-agreements 2>$null | Out-Null
+    return $LASTEXITCODE -eq 0
+}
+
 function Install-WingetPackageList {
-    param([string[]]$PackageIds)
+    param(
+        [string[]]$PackageIds,
+        [switch]$ForceInstall
+    )
 
     foreach ($packageId in $PackageIds) {
+        if (-not $ForceInstall -and (Test-WingetPackageInstalled -PackageId $packageId)) {
+            Write-Host "Skipping $packageId (already installed)"
+            continue
+        }
+
         Write-Host "Installing $packageId"
         & winget install --id $packageId --exact --accept-package-agreements --accept-source-agreements --silent
         if ($LASTEXITCODE -ne 0) {
@@ -59,11 +75,11 @@ if (-not (Test-Command "winget")) {
 }
 
 Write-Section "Installing base Windows packages"
-Install-WingetPackageList -PackageIds (Get-PackageIds -Path $basePackagesPath)
+Install-WingetPackageList -PackageIds (Get-PackageIds -Path $basePackagesPath) -ForceInstall:$ForceInstall
 
 if ($InstallOptionalPackages) {
     Write-Section "Installing optional Windows packages"
-    Install-WingetPackageList -PackageIds (Get-PackageIds -Path $optionalPackagesPath)
+    Install-WingetPackageList -PackageIds (Get-PackageIds -Path $optionalPackagesPath) -ForceInstall:$ForceInstall
 }
 
 if (-not $SkipWsl) {
@@ -94,4 +110,3 @@ if (-not $SkipWsl) {
 }
 
 Write-Section "Bootstrap complete"
-
