@@ -1,0 +1,17 @@
+# Ubuntu/Debian package names
+build-essential
+bat
+curl
+fd-find
+file
+fzf
+git
+jq
+neovim
+ripgrep
+tmux
+tree
+unzip
+zip
+zsh
+

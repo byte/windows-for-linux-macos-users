@@ -1,0 +1,8 @@
+# Nice extras that many Unix-minded developers want
+7zip.7zip
+ajeetdsouza.zoxide
+junegunn.fzf
+MikeFarah.yq
+dandavison.delta
+DEVCOM.JetBrainsMonoNerdFont
+

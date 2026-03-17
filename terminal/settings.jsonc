@@ -1,0 +1,40 @@
+{
+  "$schema": "https://aka.ms/terminal-profiles-schema",
+  "copyOnSelect": false,
+  "copyFormatting": "none",
+  "trimBlockSelection": true,
+  "profiles": {
+    "defaults": {
+      "font": {
+        "face": "CaskaydiaCove Nerd Font",
+        "size": 12
+      },
+      "opacity": 100,
+      "useAcrylic": false,
+      "padding": "8, 8, 8, 8"
+    }
+  },
+  "actions": [
+    {
+      "command": {
+        "action": "splitPane",
+        "split": "auto",
+        "duplicate": true
+      },
+      "keys": "alt+shift+d"
+    },
+    {
+      "command": "find",
+      "keys": "ctrl+shift+f"
+    },
+    {
+      "command": "copy",
+      "keys": "ctrl+shift+c"
+    },
+    {
+      "command": "paste",
+      "keys": "ctrl+shift+v"
+    }
+  ]
+}
+

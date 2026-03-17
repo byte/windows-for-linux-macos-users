@@ -1,0 +1,13 @@
+# Core host-side developer tools
+Microsoft.PowerShell
+Microsoft.WindowsTerminal
+Microsoft.PowerToys
+Git.Git
+JanDeDobbeleer.OhMyPosh
+GitHub.cli
+BurntSushi.ripgrep.MSVC
+sharkdp.fd
+jqlang.jq
+Neovim.Neovim
+Starship.Starship
+
